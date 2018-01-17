@@ -9,7 +9,7 @@
 
 [[projects]]
   name = "github.com/onsi/gomega"
-  packages = [".","format","internal/assertion","internal/asyncassertion","internal/oraclematcher","internal/testingtsupport","matchers","matchers/support/goraph/bipartitegraph","matchers/support/goraph/edge","matchers/support/goraph/node","matchers/support/goraph/util","types"]
+  packages = [".","format","gbytes","gexec","internal/assertion","internal/asyncassertion","internal/oraclematcher","internal/testingtsupport","matchers","matchers/support/goraph/bipartitegraph","matchers/support/goraph/edge","matchers/support/goraph/node","matchers/support/goraph/util","types"]
   revision = "003f63b7f4cff3fc95357005358af2de0f5fe152"
   version = "v1.3.0"
 
@@ -18,6 +18,12 @@
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
+
+[[projects]]
+  name = "github.com/shirou/gopsutil"
+  packages = ["."]
+  revision = "7ec06ec280df1dd1f08befc535049d49d63ae18a"
+  version = "v2.17.12"
 
 [[projects]]
   branch = "master"
@@ -46,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "08545202a92a119838511e2126e612dba69f551bfa06d960e89c72afd42558ff"
+  inputs-digest = "71c3d9654d377e425cb385bb3f30327b8cc45c6839abe0f07950d9f8076332f4"
   solver-name = "gps-cdcl"
   solver-version = 1
