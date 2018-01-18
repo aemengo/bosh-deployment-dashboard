@@ -2,6 +2,24 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/StackExchange/wmi"
+  packages = ["."]
+  revision = "5d049714c4a64225c3c79a7cf7d02f7fb5b96338"
+
+[[projects]]
+  name = "github.com/go-ole/go-ole"
+  packages = [".","oleutil"]
+  revision = "0e87ea779d9deb219633b828a023b32e1244dd57"
+  version = "v1.2.0"
+
+[[projects]]
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  revision = "6c771bb9887719704b210e87e934f08be014bdb1"
+  version = "v1.6.0"
+
+[[projects]]
   name = "github.com/onsi/ginkgo"
   packages = [".","config","internal/codelocation","internal/containernode","internal/failer","internal/leafnodes","internal/remote","internal/spec","internal/spec_iterator","internal/specrunner","internal/suite","internal/testingtproxy","internal/writer","reporters","reporters/stenographer","reporters/stenographer/support/go-colorable","reporters/stenographer/support/go-isatty","types"]
   revision = "9eda700730cba42af70d53180f9dcce9266bc2bc"
@@ -21,9 +39,15 @@
 
 [[projects]]
   name = "github.com/shirou/gopsutil"
-  packages = ["."]
+  packages = ["cpu","disk","host","internal/common","load","mem","net","process"]
   revision = "7ec06ec280df1dd1f08befc535049d49d63ae18a"
   version = "v2.17.12"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/shirou/w32"
+  packages = ["."]
+  revision = "bb4de0191aa41b5507caa14b0650cdbddcd9280b"
 
 [[projects]]
   branch = "master"
@@ -34,7 +58,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = ["unix","windows"]
   revision = "fff93fa7cd278d84afc205751523809c464168ab"
 
 [[projects]]
@@ -52,6 +76,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "71c3d9654d377e425cb385bb3f30327b8cc45c6839abe0f07950d9f8076332f4"
+  inputs-digest = "5d3676c34d28445a37e55a03b524b7da9726abc799d7d761d26c7a14ab6a58a1"
   solver-name = "gps-cdcl"
   solver-version = 1
