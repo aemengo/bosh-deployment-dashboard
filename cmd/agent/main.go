@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/aemengo/bosh-deployment-dashboard/config"
+	"github.com/aemengo/bosh-deployment-dashboard/system"
 	"log"
 	"net/http"
 	"os"
@@ -13,9 +14,10 @@ import (
 	"time"
 )
 
-type Metrics struct {
-	Spec  config.Spec `json:"spec"`
-	Label string      `json:"label"`
+type Info struct {
+	Spec  config.Spec  `json:"spec"`
+	Label string       `json:"label"`
+	Stats system.Stats `json:"system_stats"`
 }
 
 func main() {
@@ -39,7 +41,7 @@ func main() {
 	for {
 		select {
 		case <-tickerChan.C:
-			sendHealthMetrics(cfg, logger)
+			sendVMInformation(cfg, logger)
 		case <-signalChan:
 			logger.Println("Shutting down now...")
 			return
@@ -47,16 +49,29 @@ func main() {
 	}
 }
 
-func sendHealthMetrics(cfg config.Config, logger *log.Logger) {
-	metrics := Metrics{
-		Spec:  cfg.Spec,
-		Label: cfg.Label,
+func sendVMInformation(cfg config.Config, logger *log.Logger) {
+	stats, err := system.GetStats()
+	if err != nil {
+		logger.Printf("Error retrieving system level stats: %s", err)
+		return
 	}
 
-	contents, _ := json.Marshal(metrics)
+	info := Info{
+		Spec:  cfg.Spec,
+		Label: cfg.Label,
+		Stats: stats,
+	}
+
+	contents, _ := json.Marshal(info)
 	url := fmt.Sprintf("http://%s/health", cfg.HubAddr)
-	_, err := http.Post(url, "application/json", bytes.NewReader(contents))
+	response, err := http.Post(url, "application/json", bytes.NewReader(contents))
 	if err != nil {
 		logger.Printf("Error sending metrics to hub at: %s: %s", cfg.HubAddr, err)
+		return
+	}
+
+	if response.StatusCode != http.StatusOK {
+		logger.Printf("Failed sending metrics to hub at: %s: %s", cfg.HubAddr, response.Status)
+		return
 	}
 }

@@ -53,6 +53,7 @@ var _ = Describe("BDD Agent", func() {
 		}, "20s").Should(SatisfyAll(
 			ContainSubstring(`"deployment":"some-deployment-name`),
 			ContainSubstring(`"label":"some-deployment-type"`),
+			ContainSubstring(`"system_stats":`),
 		))
 	})
 })
