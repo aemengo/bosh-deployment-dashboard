@@ -20,6 +20,12 @@
   revision = "de8647470aafe4854c976707c431dbe1eb2822c6"
 
 [[projects]]
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  revision = "6c771bb9887719704b210e87e934f08be014bdb1"
+  version = "v1.6.0"
+
+[[projects]]
   name = "github.com/onsi/ginkgo"
   packages = [".","config","internal/codelocation","internal/containernode","internal/failer","internal/leafnodes","internal/remote","internal/spec","internal/spec_iterator","internal/specrunner","internal/suite","internal/testingtproxy","internal/writer","reporters","reporters/stenographer","reporters/stenographer/support/go-colorable","reporters/stenographer/support/go-isatty","types"]
   revision = "9eda700730cba42af70d53180f9dcce9266bc2bc"
@@ -39,15 +45,9 @@
 
 [[projects]]
   name = "github.com/shirou/gopsutil"
-  packages = ["cpu","disk","host","internal/common","load","mem","net","process"]
+  packages = ["cpu","disk","host","internal/common","load","mem","process"]
   revision = "7ec06ec280df1dd1f08befc535049d49d63ae18a"
   version = "v2.17.12"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/shirou/w32"
-  packages = ["."]
-  revision = "bb4de0191aa41b5507caa14b0650cdbddcd9280b"
 
 [[projects]]
   branch = "master"
@@ -76,6 +76,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "923342c44671dfe18330071a6e928cc3533d1833659e8053942f30d7c1a649ba"
+  inputs-digest = "1b8b8aabe6e88af0929dc784907a0fedb88f2cdbfd6fca259bfc36d1d12d15bc"
   solver-name = "gps-cdcl"
   solver-version = 1
