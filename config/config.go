@@ -17,9 +17,10 @@ type Spec struct {
 }
 
 type Config struct {
-	Spec    Spec   `yaml:"spec"`
-	HubAddr string `yaml:"hub_addr"`
-	Label   string `yaml:"label"`
+	Spec       Spec   `yaml:"spec"`
+	HubAddr    string `yaml:"hub_addr"`
+	HubDataDir string `yaml:"hub_data_dir"`
+	Label      string `yaml:"label"`
 }
 
 func NewConfig(path string) (Config, error) {

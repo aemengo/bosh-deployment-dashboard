@@ -12,13 +12,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"github.com/aemengo/bosh-deployment-dashboard/info"
 )
-
-type Info struct {
-	Spec  config.Spec  `json:"spec"`
-	Label string       `json:"label"`
-	Stats system.Stats `json:"system_stats"`
-}
 
 func main() {
 	logger := log.New(os.Stdout, "[BDD-A] ", log.LstdFlags)
@@ -52,26 +47,27 @@ func main() {
 func sendVMInformation(cfg config.Config, logger *log.Logger) {
 	stats, err := system.GetStats()
 	if err != nil {
-		logger.Printf("Error retrieving system level stats: %s", err)
+		logger.Printf("Error retrieving system level stats: %s\n", err)
 		return
 	}
 
-	info := Info{
+	i := info.Info{
 		Spec:  cfg.Spec,
 		Label: cfg.Label,
 		Stats: stats,
 	}
 
-	contents, _ := json.Marshal(info)
+	contents, _ := json.Marshal(i)
+
 	url := fmt.Sprintf("http://%s/health", cfg.HubAddr)
 	response, err := http.Post(url, "application/json", bytes.NewReader(contents))
 	if err != nil {
-		logger.Printf("Error sending metrics to hub at: %s: %s", cfg.HubAddr, err)
+		logger.Printf("Error sending metrics to hub at: %s: %s\n", cfg.HubAddr, err)
 		return
 	}
 
 	if response.StatusCode != http.StatusOK {
-		logger.Printf("Failed sending metrics to hub at: %s: %s", cfg.HubAddr, response.Status)
+		logger.Printf("Failed sending metrics to hub at: %s: %s\n", cfg.HubAddr, response.Status)
 		return
 	}
 }
