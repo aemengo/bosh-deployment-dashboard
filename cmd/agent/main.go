@@ -59,7 +59,7 @@ func sendVMInformation(cfg config.Config, logger *log.Logger) {
 
 	contents, _ := json.Marshal(i)
 
-	url := fmt.Sprintf("http://%s/health", cfg.HubAddr)
+	url := fmt.Sprintf("http://%s/api/health", cfg.HubAddr)
 	response, err := http.Post(url, "application/json", bytes.NewReader(contents))
 	if err != nil {
 		logger.Printf("Error sending metrics to hub at: %s: %s\n", cfg.HubAddr, err)

@@ -73,7 +73,9 @@ func main() {
 	);
 	`)
 
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	http.Handle("/", http.FileServer(http.Dir(cfg.HubWebDir)))
+
+	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			handleGetHealth(w, r, dbClient, logger)

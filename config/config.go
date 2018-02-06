@@ -20,6 +20,7 @@ type Config struct {
 	Spec       Spec   `yaml:"spec"`
 	HubAddr    string `yaml:"hub_addr"`
 	HubDataDir string `yaml:"hub_data_dir"`
+	HubWebDir  string `yaml:"hub_web_dir"`
 	Label      string `yaml:"label"`
 }
 
