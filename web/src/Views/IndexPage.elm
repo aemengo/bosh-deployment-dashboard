@@ -2,10 +2,12 @@ module IndexPage exposing (view)
 
 import Metric exposing (Metric)
 import MetricGroup exposing (MetricGroup)
-
+import Msg exposing (Msg)
+import Model exposing (Model)
+import List.Extra
+import Status
 import Html exposing (Html, text, div, input, h1, img, br, p, span)
 import Html.Attributes exposing (style, class, hidden)
-import List.Extra exposing (groupWhile, getAt, uniqueBy, remove)
 import Bootstrap.CDN as CDN
 import Bootstrap.Grid as Grid
 import Bootstrap.Alert as Alert
@@ -17,48 +19,6 @@ import Bootstrap.Accordion as Accordion
 import Bootstrap.Table as Table
 import Bootstrap.Card as Card
 import Bootstrap.Progress as Progress
-import Http
-import Json.Decode exposing (Decoder, map, field, string, int, float, list)
-import Json.Decode.Pipeline exposing (decode, required, optional, hardcoded)
-import Time
-import Task
-import Process
-import Status exposing (..)
-import Msg exposing (Msg)
-import Model exposing (Model)
-
-deploymentFrom : List Metric -> MetricGroup
-deploymentFrom metrics =
-    let
-        firstMetric =
-            getAt 0 metrics
-
-        name =
-            case firstMetric of
-                Nothing ->
-                    "-"
-                Just v ->
-                    v.deployment
-    
-        label =
-            case firstMetric of
-                Nothing ->
-                    "-"
-                Just v ->
-                    v.label
-    in
-        {name = name, status = (statusFor metrics), label = label, vmCount = (List.length metrics)}
-
-stateFor : Metric -> Status
-stateFor metric =
-    Running
-
-statusFor : List Metric -> Status
-statusFor metrics =
-    if List.all (\x -> (stateFor x) == Running) metrics then
-        Running
-    else
-        NeedsAttention
 
 detailsFrom : List Metric -> List (Html msg)
 detailsFrom metrics =
@@ -93,13 +53,13 @@ metricsAccordionBlock metricGroup metrics =
     let
         filteredMetrics =
             List.filter (\x -> x.deployment == metricGroup.name) metrics
-
+            
         tableRows =
             filteredMetrics
                 |> List.map (\x ->
                      Table.tr [] [ Table.td [] [ text x.name ]
                                  , Table.td [] [ text (x.instanceIndex |> toString)  ]
-                                 , Table.td [] [ text (x |> stateFor |> statusMessage) ]
+                                 , Table.td [] [ text (x |> Status.fromMetric |> Status.message) ]
                                  , Table.td [] [ text x.ip ]
                                  , Table.td [] [ text x.az ]
                                  , Table.td [] [ text (x.cpuUsed |> toString)  ]
@@ -152,7 +112,7 @@ deploymentAccordions metricGroups metrics =
                 { id = x.name
                 , options = [ Card.attrs [ style [("margin-bottom", "1.5em")] ] ]
                 , header =
-                    Accordion.header [] <| Accordion.toggle [] [ text (x.name ++ " - " ++ (x.status |> statusMessage) ++ " - " ++ (toString x.vmCount) ++ " VM(s)")  ]
+                    Accordion.header [] <| Accordion.toggle [] [ text (x.name ++ " - " ++ (x.status |> Status.message) ++ " - " ++ (toString x.vmCount) ++ " VM(s)")  ]
                 , blocks = [ (metricsAccordionBlock x metrics) ]
                 })        
 
@@ -181,8 +141,8 @@ view { metrics, query, accordionState, labelState, isUpdating } =
             
         deployments =
             filteredMetrics
-                |> groupWhile (\x y -> x.deployment == y.deployment )
-                |> List.map (\x -> deploymentFrom x)
+                |> List.Extra.groupWhile (\x y -> x.deployment == y.deployment )
+                |> List.map (\x -> MetricGroup.from x)
 
         deploymentsCount =
             deployments
@@ -191,7 +151,7 @@ view { metrics, query, accordionState, labelState, isUpdating } =
 
         brokenVMsCount =
             filteredMetrics
-                |> List.filter (\x -> (stateFor x) == NeedsAttention )
+                |> List.filter (\x -> (Status.fromMetric x) == Status.NeedsAttention )
                 |> List.length
                 
         alert =
