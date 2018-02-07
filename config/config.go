@@ -16,12 +16,17 @@ type Spec struct {
 	IP           string `yaml:"ip" json:"ip"`
 }
 
+type Hub struct {
+	IP      string `yaml:"ip"`
+	Port    string `yaml:"port"`
+	DataDir string `yaml:"data_dir"`
+	WebDir  string `yaml:"web_dir"`
+}
+
 type Config struct {
-	Spec       Spec   `yaml:"spec"`
-	HubAddr    string `yaml:"hub_addr"`
-	HubDataDir string `yaml:"hub_data_dir"`
-	HubWebDir  string `yaml:"hub_web_dir"`
-	Label      string `yaml:"label"`
+	Spec  Spec   `yaml:"spec"`
+	Hub   Hub    `yaml:"hub"`
+	Label string `yaml:"label"`
 }
 
 func NewConfig(path string) (Config, error) {
@@ -38,4 +43,8 @@ func NewConfig(path string) (Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func (h *Hub) Addr() string {
+	return h.IP+":"+h.Port
 }

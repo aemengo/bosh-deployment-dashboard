@@ -35,7 +35,9 @@ var _ = Describe("BDD Agent", func() {
 			Spec: config.Spec{
 				Deployment: "some-deployment-name",
 			},
-			HubAddr: u.Host,
+			Hub: config.Hub{
+				Addr: u.Host,
+			},
 			Label:   "some-deployment-type",
 		}
 	})

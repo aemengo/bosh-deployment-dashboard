@@ -59,15 +59,15 @@ func sendVMInformation(cfg config.Config, logger *log.Logger) {
 
 	contents, _ := json.Marshal(i)
 
-	url := fmt.Sprintf("http://%s/api/health", cfg.HubAddr)
+	url := fmt.Sprintf("http://%s/api/health", cfg.Hub.Addr())
 	response, err := http.Post(url, "application/json", bytes.NewReader(contents))
 	if err != nil {
-		logger.Printf("Error sending metrics to hub at: %s: %s\n", cfg.HubAddr, err)
+		logger.Printf("Error sending metrics to hub at: %s: %s\n", cfg.Hub.Addr(), err)
 		return
 	}
 
 	if response.StatusCode != http.StatusOK {
-		logger.Printf("Failed sending metrics to hub at: %s: %s\n", cfg.HubAddr, response.Status)
+		logger.Printf("Failed sending metrics to hub at: %s: %s\n", cfg.Hub.Addr(), response.Status)
 		return
 	}
 }

@@ -46,9 +46,9 @@ func main() {
 		logger.Fatalf("Error %s\n", err)
 	}
 
-	db, err := sql.Open("sqlite3", cfg.HubDataDir+"/bdd-hub.db")
+	db, err := sql.Open("sqlite3", cfg.Hub.DataDir+"/bdd-hub.db")
 	if err != nil {
-		logger.Printf("Error opening database at %s: %s", cfg.HubDataDir+"/bdd-hub.db", err)
+		logger.Printf("Error opening database at %s: %s\n", cfg.Hub.DataDir+"/bdd-hub.db", err)
 	}
 
 	dbClient := sqlx.NewDb(db, "sqlite3")
@@ -73,7 +73,7 @@ func main() {
 	);
 	`)
 
-	http.Handle("/", http.FileServer(http.Dir(cfg.HubWebDir)))
+	http.Handle("/", http.FileServer(http.Dir(cfg.Hub.WebDir)))
 
 	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
@@ -84,8 +84,8 @@ func main() {
 		}
 	})
 
-	logger.Printf("Initializing hub on addr: %s\n", cfg.HubAddr)
-	logger.Fatal(http.ListenAndServe(cfg.HubAddr, nil))
+	logger.Printf("Initializing hub on addr: %s\n", cfg.Hub.Addr())
+	logger.Fatal(http.ListenAndServe(cfg.Hub.Addr(), nil))
 }
 
 func handleGetHealth(w http.ResponseWriter, r *http.Request, dbClient *sqlx.DB, logger *log.Logger) {

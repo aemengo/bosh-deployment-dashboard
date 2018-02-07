@@ -4,12 +4,12 @@ import (
 	"github.com/aemengo/bosh-deployment-dashboard/config"
 	"github.com/aemengo/bosh-deployment-dashboard/info"
 	"github.com/aemengo/bosh-deployment-dashboard/system"
+	"github.com/jmoiron/sqlx"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
-	"net/http"
-	"github.com/jmoiron/sqlx"
 	"io/ioutil"
+	"net/http"
 	"os"
 )
 
@@ -29,8 +29,10 @@ var _ = Describe("BDD Hub", func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		cfg = config.Config{
-			HubAddr:    "127.0.0.1:" + hubPort,
-			HubDataDir: dataDir,
+			Hub: config.Hub{
+				Addr:    "127.0.0.1:" + hubPort,
+				DataDir: dataDir,
+			},
 		}
 
 		systemInfo = info.Info{
