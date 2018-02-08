@@ -91,9 +91,6 @@ metricsAccordionBlock metricGroup metrics =
             Grid.container []
                 [
                     Grid.row []
-                        [ Grid.col [] (detailsFrom filteredMetrics)
-                        ],
-                    Grid.row []
                         [ Grid.col [] [ table ]
                         ]
                 ]
@@ -141,6 +138,7 @@ view { metrics, query, accordionState, labelState, isUpdating } =
             
         deployments =
             filteredMetrics
+                |> List.sortBy .deployment
                 |> List.Extra.groupWhile (\x y -> x.deployment == y.deployment )
                 |> List.map (\x -> MetricGroup.from x)
 
