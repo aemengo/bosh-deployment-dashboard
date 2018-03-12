@@ -1,10 +1,20 @@
 package cf
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
+
+	"github.com/aemengo/bosh-deployment-dashboard/config"
+
+	"context"
+
+	"encoding/json"
+
+	"io/ioutil"
+
+	"github.com/pkg/errors"
+	clientcredential "golang.org/x/oauth2/clientcredentials"
 )
 
 type DeploymentInfo struct {
@@ -13,106 +23,123 @@ type DeploymentInfo struct {
 	OrgName   string
 }
 
-type CFEntity struct {
-	Name string `json:"name"`
+type Cf struct {
+	cfg        config.Config
+	httpClient *http.Client
 }
 
-type CFResource struct {
-	Entity CFEntity `json:"entity"`
-}
+func New(cfg config.Config) *Cf {
+	ccCfg := &clientcredential.Config{
+		ClientID:     cfg.Cf.ClientID,
+		ClientSecret: cfg.Cf.ClientSecret,
+		TokenURL:     cfg.Cf.UaaHost,
+	}
 
-type CFSpaceEntity struct {
-	CFEntity
-	OrganizationGuid string `json:"organization_guid"`
-}
+	httpClient := ccCfg.Client(context.Background())
 
-type CFSpaceResource struct {
-	Entity CFSpaceEntity `json:"entity"`
-}
-
-type CFAppEntity struct {
-	Name      string `json:"name"`
-	SpaceGuid string `json:"space_guid"`
-}
-
-type CFAppResource struct {
-	Entity CFAppEntity `json:"entity"`
-}
-
-type CFServiceBindingEntity struct {
-	AppGuid string `json:"app_guid"`
-}
-
-type CFServiceBindingResource struct {
-	Entity CFServiceBindingEntity `json:"entity"`
-}
-
-type CFServiceBindings struct {
-	Resources []CFServiceBindingResource `json:"resources"`
-}
-
-type CF struct {
-	URL string
+	return &Cf{
+		cfg:        cfg,
+		httpClient: httpClient,
+	}
 }
 
 var (
 	deploymentNameRe = regexp.MustCompile("service-instance_(.*)")
 )
 
-func (cf *CF) GetDeploymentInfo(deploymentName string) (DeploymentInfo, error) {
+func (c *Cf) GetDeploymentInfo() (DeploymentInfo, error) {
+	deploymentName := c.cfg.Spec.Deployment
+
 	matches := deploymentNameRe.FindStringSubmatch(deploymentName)
 	if matches == nil {
-		return DeploymentInfo{}, nil
+		return DeploymentInfo{}, errors.Errorf("the following deployment name does not match the pattern of the on-demand-service-broker: %s", deploymentName)
 	}
 
 	var (
-		serviceInstanceId  = matches[1]
-		serviceBindingsURL = fmt.Sprintf("/v2/service_instances/%s/service_bindings", serviceInstanceId)
-		serviceBindings    = CFServiceBindings{}
-		deploymentInfo     = DeploymentInfo{}
-		spaceGUID          = ""
+		serviceInstanceId   = matches[1]
+		serviceInstanceResp = struct {
+			Entity struct {
+				SpaceURL           string `json:"space_url"`
+				ServiceBindingsURL string `json:"service_bindings_url"`
+			} `json:"entity"`
+		}{}
 	)
 
-	err := cf.makeRequest(serviceBindingsURL, &serviceBindings)
+	err := c.makeRequest("/v2/service_instances/"+serviceInstanceId, &serviceInstanceResp)
 	if err != nil {
 		return DeploymentInfo{}, err
 	}
 
-	for _, resource := range serviceBindings.Resources {
-		var (
-			appGuid     = resource.Entity.AppGuid
-			appURL      = fmt.Sprintf("/v2/apps/%s", appGuid)
-			appResource = CFAppResource{}
-		)
+	spaceResp := struct {
+		Entity struct {
+			Name            string `json:"name"`
+			OrganizationURL string `json:"organization_url"`
+		} `json:"entity"`
+	}{}
 
-		cf.makeRequest(appURL, &appResource)
-		deploymentInfo.AppNames = append(deploymentInfo.AppNames, appResource.Entity.Name)
-		spaceGUID = appResource.Entity.SpaceGuid
+	if err := c.makeRequest(serviceInstanceResp.Entity.SpaceURL, &spaceResp); err != nil {
+		return DeploymentInfo{}, err
 	}
 
-	if spaceGUID == "" {
-		return deploymentInfo, nil
+	orgResp := struct {
+		Entity struct {
+			Name string `json:"name"`
+		} `json:"entity"`
+	}{}
+
+	if err := c.makeRequest(spaceResp.Entity.OrganizationURL, &orgResp); err != nil {
+		return DeploymentInfo{}, err
 	}
 
-	var spaceResource CFSpaceResource
-	cf.makeRequest("/v2/spaces/"+spaceGUID, &spaceResource)
-	deploymentInfo.SpaceName = spaceResource.Entity.Name
+	serviceBindingsResp := struct {
+		Resources []struct {
+			Entity struct {
+				AppURL string `json:"app_url"`
+			}
+		}
+	}{}
 
-	var organizationResource CFResource
-	cf.makeRequest("/v2/organizations/"+spaceResource.Entity.OrganizationGuid, &organizationResource)
-	deploymentInfo.OrgName = organizationResource.Entity.Name
+	if err := c.makeRequest(serviceInstanceResp.Entity.ServiceBindingsURL, &serviceBindingsResp); err != nil {
+		return DeploymentInfo{}, err
+	}
 
-	return deploymentInfo, nil
+	var appNames []string
+	for _, resource := range serviceBindingsResp.Resources {
+		appResp := struct {
+			Entity struct {
+				Name string `json:"name"`
+			} `json:"entity"`
+		}{}
+
+		if err := c.makeRequest(resource.Entity.AppURL, &appResp); err != nil {
+			return DeploymentInfo{}, err
+		}
+
+		appNames = append(appNames, appResp.Entity.Name)
+	}
+
+	return DeploymentInfo{
+		SpaceName: spaceResp.Entity.Name,
+		OrgName:   orgResp.Entity.Name,
+		AppNames:  appNames,
+	}, nil
 }
 
-func (cf *CF) makeRequest(path string, dest interface{}) error {
-	resp, _ := http.Get(cf.URL + path)
+func (c *Cf) makeRequest(path string, dest interface{}) error {
+	resp, err := http.Get(c.cfg.Cf.ApiHost + path)
+	if err != nil {
+		return err
+	}
 
 	switch resp.StatusCode {
 	case http.StatusOK:
 		json.NewDecoder(resp.Body).Decode(dest)
-	case http.StatusNotFound:
-		return fmt.Errorf("invalid response [%s] for GET %s", resp.Status, path)
+	default:
+		var contents []byte
+		if resp.Body != nil {
+			contents, _ = ioutil.ReadAll(resp.Body)
+		}
+		return fmt.Errorf("invalid response [%s] for GET %s: %s", resp.Status, path, contents)
 	}
 
 	return nil

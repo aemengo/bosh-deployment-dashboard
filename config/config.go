@@ -1,9 +1,12 @@
 package config
 
 import (
+	"io/ioutil"
+
+	"fmt"
+
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 type Spec struct {
@@ -27,6 +30,15 @@ type Config struct {
 	Spec  Spec   `yaml:"spec"`
 	Hub   Hub    `yaml:"hub"`
 	Label string `yaml:"label"`
+	Cf    Cf     `yaml:"cf"`
+}
+
+type Cf struct {
+	Enabled      bool   `yaml:"enabled"`
+	ApiHost      string `yaml:"api_domain"`
+	UaaHost      string `yaml:"uaa_domain"`
+	ClientID     string `yaml:"client_id"`
+	ClientSecret string `yaml:"client_secret"`
 }
 
 func NewConfig(path string) (Config, error) {
@@ -45,6 +57,10 @@ func NewConfig(path string) (Config, error) {
 	return cfg, nil
 }
 
+func (c *Cf) UaaTokenURL() string {
+	return fmt.Sprintf("%s/oauth/token", c.UaaHost)
+}
+
 func (h *Hub) Addr() string {
-	return h.IP+":"+h.Port
+	return h.IP + ":" + h.Port
 }
