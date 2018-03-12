@@ -51,21 +51,21 @@
 
 [[projects]]
   name = "github.com/shirou/gopsutil"
-  packages = ["cpu","disk","host","internal/common","load","mem","net","process"]
+  packages = ["cpu","disk","host","internal/common","load","mem","process"]
   revision = "7ec06ec280df1dd1f08befc535049d49d63ae18a"
   version = "v2.17.12"
 
 [[projects]]
   branch = "master"
-  name = "github.com/shirou/w32"
-  packages = ["."]
-  revision = "bb4de0191aa41b5507caa14b0650cdbddcd9280b"
+  name = "golang.org/x/net"
+  packages = ["context","context/ctxhttp","html","html/atom","html/charset"]
+  revision = "5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec"
 
 [[projects]]
   branch = "master"
-  name = "golang.org/x/net"
-  packages = ["html","html/atom","html/charset"]
-  revision = "5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec"
+  name = "golang.org/x/oauth2"
+  packages = [".","internal"]
+  revision = "d7d64896b5ff88e703f289390e3e98cd010a837e"
 
 [[projects]]
   branch = "master"
@@ -80,6 +80,12 @@
   revision = "e19ae1496984b1c655b8044a65c0300a3c878dd3"
 
 [[projects]]
+  name = "google.golang.org/appengine"
+  packages = ["internal","internal/base","internal/datastore","internal/log","internal/remote_api","internal/urlfetch","urlfetch"]
+  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
+  version = "v1.0.0"
+
+[[projects]]
   branch = "v2"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
@@ -88,6 +94,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a81391ab797910e75a2047a1429308b60c5974df4fd24107e8692821aabe641b"
+  inputs-digest = "7566d0e04b73783f011f1f68af95cdbb83fdd9a82ec27b97ae41fe03443a881d"
   solver-name = "gps-cdcl"
   solver-version = 1
